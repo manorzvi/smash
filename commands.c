@@ -3,26 +3,17 @@
 
 #include "commands.h"
 
-
-void ExeExternal(char *args[MAX_ARG], char* cmdString);  // Handle external commands.
-int ExeCmd(void* jobs, char* lineSize, char* cmdString); // Execute non-complicated commands.
-
-
 //********************************************
 // function name: ExeCmd
 // Description: interperts and executes built-in commands
 // Parameters: pointer to jobs, command string
 // Returns: 0 - success,1 - failure
 //**************************************************************************************
-int ExeCmd(void* jobs, char* lineSize, char* cmdString, int* history_idx)  {
+int ExeCmd(void* jobs, char* lineSize, char* cmdString)  {
 
-	printf("[DEBUG] - %d\n",(*history_idx));
-	(*history_idx)++;
-	char* cmd; 
+	char* cmd;
 	char* args[MAX_ARG];
-	char pwd[MAX_LINE_SIZE];
 	int status;
-
 	char* delimiters = " \t\n";  
 	int i            = 0;
 	int num_arg      = 0;
@@ -43,34 +34,55 @@ int ExeCmd(void* jobs, char* lineSize, char* cmdString, int* history_idx)  {
 
 	/*************************************************/
 	if (!strcmp(cmd, "cd") ) {
-		printf("[DEBUG] - %s",history_idx % HISTORY_SIZE);
-//		strcpy(history[history_idx % HISTORY_SIZE], cmd);
-//		history_idx ++;
+
+		strcpy(history[history_idx], cmdString);
+		history_idx ++;
+		history_idx = history_idx%HISTORY_SIZE;
 
 		if (num_arg == 1) {
 
-			if (!strcmp(args[1], "-")) {
+            int result;
 
-				if (chdir(lastCWD) != 0) {
+			if (!strcmp(args[1], "-")) {
+                result = chdir(lastCWD);
+				if (result != 0) {
 
 					printf("smash error: > \"%s\" - path not found.\n", lastCWD);
 					illegal_cmd = TRUE;
+				} else {
+
+				    printf("[DEBUG] - cd success.\n");
+
+                    strcpy(lastCWD, pwd);
+
+                    if (getcwd(pwd, sizeof(pwd)) == NULL) {
+                        printf("smash error: > Failed on getcwd.");
+                        exit(1);
+                    }
 				}
 			} else {
-
-				if (chdir(args[1]) != 0) {
+                result = chdir(args[1]);
+				if (result != 0) {
 
 					printf("smash error: > \"%s\" - path not found.\n", args[1]);
 					illegal_cmd = TRUE;
+				} else {
+
+                    printf("[DEBUG] - cd success.\n");
+
+                    strcpy(lastCWD, pwd);
+
+                    if (getcwd(pwd, sizeof(pwd)) == NULL) {
+                        printf("smash error: > Failed on getcwd.");
+                        exit(1);
+                    }
 				}
 			}
-		}
-		else if (num_arg == 0) {
+		} else if (num_arg == 0) {
 
 			printf("cd expects one argument. If U don't like the road U R walking, start paving another one. D.Parton\n");
 			illegal_cmd = TRUE;
-		}
-		else {
+		} else {
 
 			printf("cd expects exactly one argument. Two roads diverged in a yellow wood, and sorry I could not travel both... R.Frost\n");
 			illegal_cmd = TRUE;
@@ -79,29 +91,49 @@ int ExeCmd(void* jobs, char* lineSize, char* cmdString, int* history_idx)  {
 
 	else if (!strcmp(cmd, "history")) {
 
+		strcpy(history[history_idx], cmdString);
+        history_idx ++;
+        history_idx = history_idx%HISTORY_SIZE;
 
+	    printf("\n");
+
+	    int i=history_idx + 1;
+	    while (i<HISTORY_SIZE) {
+
+	        if (!strcmp(history[i], "unvalid")) {
+
+	            i++;
+                continue;
+	        } else {
+
+	            printf("%s\n",history[i]);
+	            i++;
+	        }
+	    }
+
+	    i=0;
+	    while(i<history_idx) {
+
+            printf("%s\n",history[i]);
+            i++;
+	    }
 	}
 
 	/*************************************************/
 	else if (!strcmp(cmd, "pwd")) {
 
+		strcpy(history[history_idx], cmdString);
+        history_idx ++;
+        history_idx = history_idx%HISTORY_SIZE;
+
 		if (num_arg != 0) {
 
 			printf("smash error: > pwd expects no arguments\n");
 			illegal_cmd = TRUE;
-		}
-		else {
+		} else {
 
-			if (getcwd(pwd, sizeof(pwd)) == NULL) {
-
-				printf("smash error: > Failed on getcwd.\n");
-				exit(1);
-			}
-			else {
-
-				printf("%s\n", pwd);
-			}
-		}
+            printf("%s\n", pwd);
+        }
 	}
 
 	/*************************************************/
@@ -306,13 +338,5 @@ int BgCmd(char* lineSize, void* jobs) {
 		}
 	}
 	return -1;
-}
-
-
-void initHistory(char *history[HISTORY_SIZE]) {
-
-	for(int i=0;i<HISTORY_SIZE;i++) {
-		history[i] = "nonvalid";
-	}
 }
 

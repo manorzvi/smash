@@ -15,7 +15,8 @@ main file. This file contains the main function of smash
 #define MAX_LINE_SIZE 80
 #define MAXARGS 20
 
-Job jobs[MAXJOBS]; //Handle background jobs
+Job   jobs[MAXJOBS]; //Handle background jobs
+
 
 char lineSize[MAX_LINE_SIZE];
 char* L_Fg_Cmd;
@@ -35,18 +36,15 @@ int main(int argc, char *argv[])  {
         exit(1);
     }
 
-    printf("[DEBUG] - Current location: %s\n",lastCWD);
+    if (getcwd(pwd, sizeof(pwd)) == NULL) {
+        printf("smash error: > Failed on getcwd.");
+        exit(1);
+    }
 
     // Init all Jobs to non-valid.
     initJobsArray(jobs);
-    initHistory(history);
+    initHistory();
     history_idx = 0;
-
-    printf("[DEBUG] - %d\n",history_idx);
-
-    history_idx++;
-
-    printf("[DEBUG] - %d\n",history_idx);
 
     //signal declaretions
     //NOTE: the signal handlers and the function/s that sets the handler should be found in siganls.c
@@ -77,6 +75,7 @@ int main(int argc, char *argv[])  {
 
     while (1) {
         printf("smash > ");
+        //printf("[DEBUG] - current CWD: %s    lastCWD: %s ", pwd, lastCWD);
         fgets(lineSize, MAX_LINE_SIZE, stdin);
         strcpy(cmdString, lineSize);
         cmdString[strlen(lineSize) - 1] = '\0';
@@ -88,7 +87,7 @@ int main(int argc, char *argv[])  {
         if (!BgCmd(lineSize, jobs)) continue;
 
         // built in commands
-        ExeCmd(jobs, lineSize, cmdString, &history_idx);
+        ExeCmd(jobs, lineSize, cmdString);
 
         /* initialize for next line read*/
         lineSize[0] = '\0';
@@ -97,3 +96,10 @@ int main(int argc, char *argv[])  {
     return 0;
 }
 
+
+void initHistory() {
+
+    for(int i=0;i<HISTORY_SIZE;i++) {
+        strcpy(history[i], "unvalid");
+    }
+}
