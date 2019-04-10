@@ -1,6 +1,10 @@
 //
 // Created by Manor on 4/6/2019.
 //
+
+#ifndef _JOBS_H
+#define _JOBS_H
+
 #include <time.h>
 
 #define MAXJOBS 100
@@ -17,7 +21,7 @@
 #define DONE 1
 #define UNDONE -1
 
-typedef struct job {
+typedef struct job_t {
 
     char* name;            // Process name
     int id;                // Process id - an integer between 0 to MAXJOBS-1
@@ -36,6 +40,8 @@ int getJobsSize(Job jobs[MAXJOBS]);                                     // Get n
 
 void initJobsArray(Job jobs[MAXJOBS]);                                  // Set all processes in jobs array to UNVALID
 
-void printJobs(Job jobs[]);                                             // Print jobs array line by line
+void printJobs(Job jobs[MAXJOBS]);                                             // Print jobs array line by line
 
 void printJob(Job job);                                                 // Print one job (as one line).
+
+#endif

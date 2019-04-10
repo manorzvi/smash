@@ -18,11 +18,14 @@
 
 //typedef enum { FALSE , TRUE } bool;
 
-char lastCWD[MAX_LINE_SIZE];
+char  lastCWD[MAX_LINE_SIZE];
+
+char* history[HISTORY_SIZE];
+int history_idx;
 
 int ExeComp(char* lineSize);
 int BgCmd(char* lineSize, void* jobs);
-int ExeCmd(void* jobs, char* lineSize, char* cmdString);
+int ExeCmd(void* jobs, char* lineSize, char* cmdString, int* history_idx);
 void ExeExternal(char *args[MAX_ARG], char* cmdString);
 #endif
 

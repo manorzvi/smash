@@ -8,17 +8,18 @@
 void printJob(Job job) {
 
     if (job.stopped == 1) {
-        printf("[%d] %s : %d %d secs (Stopped)", job.id, job.name, job.pid, job.timeSinceInit);
+        printf("[%d] %s : %d %d secs (Stopped)", job.id, job.name, job.pid, job.creationTime); //TODO: fix time printing to be a substruction of current time and creation time
+                                                                                               //      (right now it just print the creation time, and not the time since creation)
         return;
     }
 
     if (job.stopped == -1) {
-        printf("[%d] %s : %d %d secs", job.id, job.name, job.pid, job.timeSinceInit);
+        printf("[%d] %s : %d %d secs", job.id, job.name, job.pid, job.creationTime);
         return;
     }
 
     if (job.stopped == 0) {
-        printf("[%d] %s : %d %d secs (NonValid)", job.id, job.name, job.pid, job.timeSinceInit);
+        printf("[%d] %s : %d %d secs (NonValid)", job.id, job.name, job.pid, job.creationTime);
         return;
     }
 
@@ -41,8 +42,9 @@ int getJobsSize(Job jobs[MAXJOBS]) {
 
 
 void initJobsArray(Job jobs[MAXJOBS]) {
-
+//    printf("[DEBUG] - in initJobsArray:\n");
     for (int i=0;i<MAXJOBS;i++) {
+//        printf("[DEBUG] - init jobs[%d]:\n",i);
         jobs[i].valid = NONVALID;
         jobs[i].name = "undef";
         jobs[i].id = NONVALID;

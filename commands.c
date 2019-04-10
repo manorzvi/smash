@@ -3,7 +3,10 @@
 
 #include "commands.h"
 
-void ExeExternal(char *args[MAX_ARG], char* cmdString); //Handle external commands.
+
+void ExeExternal(char *args[MAX_ARG], char* cmdString);  // Handle external commands.
+int ExeCmd(void* jobs, char* lineSize, char* cmdString); // Execute non-complicated commands.
+
 
 //********************************************
 // function name: ExeCmd
@@ -11,8 +14,10 @@ void ExeExternal(char *args[MAX_ARG], char* cmdString); //Handle external comman
 // Parameters: pointer to jobs, command string
 // Returns: 0 - success,1 - failure
 //**************************************************************************************
-int ExeCmd(void* jobs, char* lineSize, char* cmdString)
-{
+int ExeCmd(void* jobs, char* lineSize, char* cmdString, int* history_idx)  {
+
+	printf("[DEBUG] - %d\n",(*history_idx));
+	(*history_idx)++;
 	char* cmd; 
 	char* args[MAX_ARG];
 	char pwd[MAX_LINE_SIZE];
@@ -38,6 +43,9 @@ int ExeCmd(void* jobs, char* lineSize, char* cmdString)
 
 	/*************************************************/
 	if (!strcmp(cmd, "cd") ) {
+		printf("[DEBUG] - %s",history_idx % HISTORY_SIZE);
+//		strcpy(history[history_idx % HISTORY_SIZE], cmd);
+//		history_idx ++;
 
 		if (num_arg == 1) {
 
@@ -45,46 +53,48 @@ int ExeCmd(void* jobs, char* lineSize, char* cmdString)
 
 				if (chdir(lastCWD) != 0) {
 
-					printf("smash error: > \"%s\" - path not found.", lastCWD);
+					printf("smash error: > \"%s\" - path not found.\n", lastCWD);
 					illegal_cmd = TRUE;
 				}
-			}
-			else if (chdir(args[1]) != 0) {
+			} else {
 
-				printf("smash error: > \"%s\" - path not found.", args[1]);
-				illegal_cmd = TRUE;
-			}
-			else {
+				if (chdir(args[1]) != 0) {
 
-				printf("smash error: > \"%s\" - illegal argument.", args[1]);
-				illegal_cmd = TRUE;
+					printf("smash error: > \"%s\" - path not found.\n", args[1]);
+					illegal_cmd = TRUE;
+				}
 			}
 		}
 		else if (num_arg == 0) {
 
-			printf("cd expects one argument. If U don't like the road U R walking, start paving another one. D.Parton");
+			printf("cd expects one argument. If U don't like the road U R walking, start paving another one. D.Parton\n");
 			illegal_cmd = TRUE;
 		}
 		else {
 
-			printf("cd expects exactly one argument. Two roads diverged in a yellow wood, and sorry I could not travel both... R.Frost");
+			printf("cd expects exactly one argument. Two roads diverged in a yellow wood, and sorry I could not travel both... R.Frost\n");
 			illegal_cmd = TRUE;
 		}
 	} 
-	
+
+	else if (!strcmp(cmd, "history")) {
+
+
+	}
+
 	/*************************************************/
 	else if (!strcmp(cmd, "pwd")) {
 
 		if (num_arg != 0) {
 
-			printf("smash error: > pwd expects no arguments");
+			printf("smash error: > pwd expects no arguments\n");
 			illegal_cmd = TRUE;
 		}
 		else {
 
 			if (getcwd(pwd, sizeof(pwd)) == NULL) {
 
-				printf("smash error: > Failed on getcwd.");
+				printf("smash error: > Failed on getcwd.\n");
 				exit(1);
 			}
 			else {
@@ -100,7 +110,7 @@ int ExeCmd(void* jobs, char* lineSize, char* cmdString)
 
 		if (num_arg != 0) {
 
-			printf("smash error: > jobs expects no arguments");
+			printf("smash error: > jobs expects no arguments\n");
 			illegal_cmd = TRUE;
 		}
 		else {
@@ -159,17 +169,17 @@ void ExeExternal(char *args[MAX_ARG], char* cmdString) {
 
 	case -1:
 
-		perror("Failed forking a child. Exit.");
+		perror("Failed forking a child. Exit.\n");
 		exit(1);
 
     case 0 : // Child Process
 
     	setpgrp();
-    	execve(args[0], args); //NOTE: Other variations exists online - exec, execvp. Ask teaching assistant.
-    	                       //      Maybe second arguments to execve (args) need to be chomped (remove first element).
+    	//execve(args[0], args); //NOTE: Other variations exists online - exec, execvp. Ask teaching assistant.
+    	execvp(args[0], args);   //      Maybe second arguments to execve (args) need to be chomped (remove first element).
 
-    	printf("Command: %s failed.", cmdString);
-    	perror("Process execution failed.");
+    	printf("External Command: %s failed.\n", cmdString);
+    	perror("Process execution failed.\n");
     	exit(1);
 
 	default:
@@ -211,18 +221,18 @@ int ExeComp(char* lineSize)  {
 
 		case -1:
 
-			perror("Failed forking a child. Exit.");
+			perror("Failed forking a child. Exit.\n");
 			exit(1);
 
 		case 0 : // Child Process
 
 			setpgrp();
 
-			execve(args[0], args); //NOTE: Other variations exists online - exec, execvp. Ask teaching assistant.
-			                       //      Maybe second arguments to execve (args) need to be chomped (remove first element).
+			//execve(args[0], args); //NOTE: Other variations exists online - exec, execvp. Ask teaching assistant.
+			execvp(args[0], args);   //      Maybe second arguments to execve (args) need to be chomped (remove first element).
 
-			printf("Complicated Command: %s failed.", lineSize);
-			perror("Process execution failed.");
+			printf("Complicated Command: %s failed.\n", lineSize);
+			perror("Process execution failed.\n");
 			exit(1);
 
 		default:
@@ -261,12 +271,12 @@ int BgCmd(char* lineSize, void* jobs) {
 		Command = strtok(lineSize, delimiters);
 		if (Command == NULL) {
 
-			printf("Empty Command. Give me something to work with.");
+			printf("Empty Command. Give me something to work with.\n");
 			return 0;
 		}
 
-		args[0] = cmd;
-		for (i=1; i<MAX_ARG; i++) {
+		args[0] = cmdString;
+		for (int i=1; i<MAX_ARG; i++) {
 			args[i] = strtok(NULL, delimiters);
 		}
 
@@ -274,17 +284,17 @@ int BgCmd(char* lineSize, void* jobs) {
 
 		case -1:
 
-			perror("Failed forking a child. Exit.");
+			perror("Failed forking a child. Exit.\n");
 			exit(1);
 
 		case 0 : // Child Process
 
 			setpgrp();
-			execve(args[0], args); //NOTE: Other variations exists online - exec, execvp. Ask teaching assistant.
-			//      Maybe second arguments to execve (args) need to be chomped (remove first element).
+			//execve(args[0], args); //NOTE: Other variations exists online - exec, execvp. Ask teaching assistant.
+			execvp(args[0], args);   //      Maybe second arguments to execve (args) need to be chomped (remove first element).
 
-			printf("Command: %s failed.", cmdString);
-			perror("Process execution failed.");
+			printf("Command: %s failed.\n", cmdString);
+			perror("Process execution failed.\n");
 			exit(1);
 
 		default:
@@ -294,18 +304,15 @@ int BgCmd(char* lineSize, void* jobs) {
 															 //      When that code is being fetched to processor?
 
 		}
-
-
-
-
-
-
-
-
-
-
-		
 	}
 	return -1;
+}
+
+
+void initHistory(char *history[HISTORY_SIZE]) {
+
+	for(int i=0;i<HISTORY_SIZE;i++) {
+		history[i] = "nonvalid";
+	}
 }
 
