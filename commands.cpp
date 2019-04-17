@@ -318,7 +318,6 @@ int ExeCmd(char* lineSize, char* cmdString)
         } else {
 
             if (num_arg == 0) {
-                std::cout<<"[DEBUG] - exit smash."<<std::endl;
                 exit(0); //TODO: should i send SIGTERM/SIGKILL to myself? - kill(0,SIGTERM)
             }
             else {
@@ -341,7 +340,7 @@ int ExeCmd(char* lineSize, char* cmdString)
                             int waitpid_return = waitpid(jobs[i].get_pid(),NULL,WNOHANG);
                             if (waitpid_return == -1) {
 
-                                std::cout<<"[DEBUG] - waitpid returned with -1 (error indication)."<<std::endl;
+                                //std::cout<<"[DEBUG] - waitpid returned with -1 (error indication)."<<std::endl;
                             } else if (waitpid_return != 0) {
                                 break;
                             }
@@ -439,7 +438,7 @@ void ExeExternal(char *args[MAX_ARG], char* cmdString) {
             kill(getpid(), SIGKILL);
             return;
         default:
-            std::cout << "[DEBUG] - Foreground & external command. Wait to finish." << endl;
+            //std::cout << "[DEBUG] - Foreground & external command. Wait to finish." << endl;
             current_fg_command_pid = pid;
             current_fg_command     = string(cmdString);
 
@@ -496,13 +495,13 @@ int ExeComp(char* cmdString) {
                 2) otherwise: wait for it to finish
                 */
                 if (cmdString[strlen(cmdString)-2] == '&') {
-                    std::cout<<"[DEBUG] - Background & complicated command. Add to Jobs"<<endl;
+                    //std::cout<<"[DEBUG] - Background & complicated command. Add to Jobs"<<endl;
                     time_t t;
                     time(&t);
                     jobs.push_back(Job(pid,string(cmdString), false, t));
                     return 0;
                 } else {
-                    std::cout<<"[DEBUG] - Foreground & complicated command. Wait to finish."<<endl;
+                    //std::cout<<"[DEBUG] - Foreground & complicated command. Wait to finish."<<endl;
                     current_fg_command_pid = pid;
                     current_fg_command = string(cmdString);
 
@@ -535,7 +534,7 @@ int BgCmd(char* lineSize, char* cmdString) {
 
         update_history(string(cmdString));
         clean_finished_jobs();
-
+        
         lineSize[strlen(lineSize)-2] = '\0';
         cmd = strtok(lineSize, delimiters);
 
@@ -566,7 +565,7 @@ int BgCmd(char* lineSize, char* cmdString) {
                 cerr << "smash error: > “Child execution failed: \"" << string(cmdString) << endl;
                 kill(getpid(),SIGKILL);
             default:
-                std::cout<<"[DEBUG] - Background command. Add to Jobs"<<endl;
+                //std::cout<<"[DEBUG] - Background command. Add to Jobs"<<endl;
                 time_t t;
                 time(&t);
                 jobs.push_back(Job(pid,string(cmdString), false, t));
@@ -608,7 +607,7 @@ void clean_finished_jobs() {
         int waitpid_return = waitpid(jobs[i].get_pid(),NULL,WNOHANG);
         if (waitpid_return == -1) {
 
-            std::cout<<"[DEBUG] - (in clean_finished_jobs) - waitpid returned with -1 (error indication)."<<std::endl;
+            //std::cout<<"[DEBUG] - (in clean_finished_jobs) - waitpid returned with -1 (error indication)."<<std::endl;
         } else if (waitpid_return != 0) {
 
             jobs.erase(jobs.begin()+i);

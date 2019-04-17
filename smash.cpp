@@ -1,7 +1,6 @@
 //
 // Created by Manor on 4/12/2019.
 //
-
 /*	smash.c
 main file. This file contains the main function of smash
 */
